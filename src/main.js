@@ -4,14 +4,18 @@ import './style.css'
 import App from './App.vue'
 import HelloWorld from './components/HelloWorld.vue'
 import Potions from './components/Potions.vue'
-import PotionDetails from './components/PotionDetails.vue' // Importez le nouveau composant
+import PotionDetails from './components/PotionDetails.vue'
+import Sorts from './components/Sorts.vue'
+import SortDetails from './components/SortDetails.vue' // Importez le nouveau composant
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/', component: HelloWorld },
     { path: '/potions', component: Potions },
-    { path: '/potions/:id', name: 'PotionDetails', component: PotionDetails }
+    { path: '/potions/:id', name: 'PotionDetails', component: PotionDetails },
+    { path: '/sorts', component: Sorts },
+    { path: '/sorts/:id', name: 'SortDetails', component: SortDetails } // Ajoutez cette ligne
   ]
 })
 

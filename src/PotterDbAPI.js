@@ -12,3 +12,13 @@ export async function getPotion(id) {
     return response.data
 }
 
+export async function getSorts() {
+    // Remplacez cette URL par l'URL de votre API
+    const response = await axios.get(`${API_URL}/spells`)
+    return response.data.data 
+}
+
+export async function getSort(id) {
+    const response = await axios.get(`${API_URL}/spells/${id}`)
+    return response.data
+}

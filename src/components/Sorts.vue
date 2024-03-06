@@ -1,13 +1,13 @@
 <template>
     <div>
-        <h1>Potions</h1>
-        <input type="text" v-model="search" placeholder="Rechercher une potion">
-        <ul class="potion-list">
-            <li v-for="potion in paginatedData" :key="potion.id">
-                <router-link :to="`/potions/${potion.id}`">
-                    <div class="potion-item">
-                        <img :src="potion.attributes ? potion.attributes.image : ''" alt="Potion image">
-                        <div class="potion-name">{{ potion.attributes ? potion.attributes.name : '' }}</div>
+        <h1>Sorts</h1>
+        <input type="text" v-model="search" placeholder="Rechercher un sort">
+        <ul class="sort-list">
+            <li v-for="sort in paginatedData" :key="sort.id">
+                <router-link :to="`/sorts/${sort.id}`">
+                    <div class="sort-item">
+                        <img :src="sort.attributes ? sort.attributes.image : ''" alt="Sort image">
+                        <div class="sort-name">{{ sort.attributes ? sort.attributes.name : '' }}</div>
                     </div>
                 </router-link>
             </li>
@@ -18,31 +18,31 @@
 </template>
 
 <script>
-import { getPotions } from '../PotterDbAPI.js'
+import { getSorts } from '../PotterDbAPI.js'
 
 export default {
     data() {
         return {
-            potions: [],
+            sorts: [],
             search: '',
             error: null,
-            pageNumber: 0, // Ajoutez cette ligne
-            pageSize: 12 // Ajoutez cette ligne
+            pageNumber: 0,
+            pageSize: 12
         }
     },
     computed: {
-        filteredPotions() {
-            return this.potions.filter(potion => 
-                potion.attributes.name.toLowerCase().includes(this.search.toLowerCase())
+        filteredSorts() {
+            return this.sorts.filter(sort => 
+                sort.attributes.name.toLowerCase().includes(this.search.toLowerCase())
             );
         },
-        pageCount() { // Ajoutez ce bloc
-            return Math.ceil(this.filteredPotions.length / this.pageSize)
+        pageCount() {
+            return Math.ceil(this.filteredSorts.length / this.pageSize)
         },
-        paginatedData() { // Ajoutez ce bloc
+        paginatedData() {
             const start = this.pageNumber * this.pageSize
             const end = start + this.pageSize
-            return this.filteredPotions.slice(start, end)
+            return this.filteredSorts.slice(start, end)
         }
     },
     methods: {
@@ -59,8 +59,8 @@ export default {
     },
     async mounted() {
         try {
-            this.potions = await getPotions()
-            console.log(this.potions) // Ajoutez cette ligne
+            this.sorts = await getSorts()
+            console.log(this.sorts)
         } catch (error) {
             this.error = error.message
             console.error(error)
@@ -70,7 +70,7 @@ export default {
 </script>
 
 <style scoped>
-.potion-list {
+.sort-list {
     display: flex;
     flex-wrap: wrap;
     padding: 0;
@@ -79,7 +79,7 @@ export default {
     justify-content: space-between;
 }
 
-.potion-list li {
+.sort-list li {
     flex: 0 0 auto;
     width: 300px;
     box-sizing: border-box;
@@ -90,14 +90,14 @@ export default {
     border-width: 2.5px;
 }
 
-.potion-item {
+.sort-item {
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
 }
 
-.potion-name {
+.sort-name {
     margin-top: 10px;
 }
 

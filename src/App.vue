@@ -5,9 +5,9 @@ const route = useRoute()
 
 <template>
   <div>
-    <a href="https://potterdb.com" target="_blank">
+    <router-link to="/">
       <img src="https://potterdb.com/images/logo.svg" class="logo" alt="Vite logo" />
-    </a>
+    </router-link>
     <router-view  />
   </div>
 </template>
