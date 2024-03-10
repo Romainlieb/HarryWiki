@@ -18,6 +18,12 @@ const count = ref(0)
     <router-link to="/sorts">
       <button type="button">Sorts</button>
     </router-link>
+    <router-link to="/books">
+      <button type="button">Livres</button>
+    </router-link>
+    <router-link to="/characters">
+      <button type="button">Personnages</button>
+    </router-link>
   </div>
 </template>
 
