@@ -8,6 +8,7 @@ import PotionDetails from './components/PotionDetails.vue'
 import Sorts from './components/Sorts.vue'
 import SortDetails from './components/SortDetails.vue' // Importez le nouveau composant
 import Books from './components/Books.vue'
+import BookDetails from './components/BookDetails.vue'
 import Characters from './components/Characters.vue'
 import CharactersDetails from './components/CharactersDetails.vue'
 
@@ -20,6 +21,7 @@ const router = createRouter({
     { path: '/sorts', component: Sorts },
     { path: '/sorts/:id', name: 'SortDetails', component: SortDetails }, // Ajoutez cette ligne
     { path: '/books', component: Books },
+    { path: '/livres/:id', name: 'BookDetails', component: BookDetails },
     { path: '/characters', component: Characters },
     { path: '/characters/:id', name: 'CharactersDetails', component: CharactersDetails }
   ]

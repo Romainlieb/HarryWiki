@@ -3,7 +3,7 @@
         <h1>Personnage</h1>
         <input type="text" v-model="search" placeholder="Rechercher un personnage">
         <ul class="character-list">
-            <li v-for="character in paginatedData" :key="character.id">
+            <li v-for="character in characters" :key="character.id">
                 <router-link :to="`/characters/${character.id}`">
                     <div class="character-item">
                         <img :src="character.attributes ? character.attributes.image : ''" alt="Character image">
@@ -13,7 +13,7 @@
             </li>
         </ul>
         <button @click="previousPage" :disabled="pageNumber <= 0">Précédent</button>
-        <button @click="nextPage" :disabled="pageNumber >= pageCount - 1">Suivant</button>
+        <button @click="nextPage" >Suivant</button>
     </div>
 </template>
 
@@ -26,7 +26,7 @@ export default {
             characters: [],
             search: '',
             error: null,
-            pageNumber: 0, // Ajoutez cette ligne
+            pageNumber: 1, // Ajoutez cette ligne
             pageSize: 12 // Ajoutez cette ligne
         }
     },
@@ -46,10 +46,12 @@ export default {
         }
     },
     methods: {
-        nextPage() {
-            if (this.pageNumber < this.pageCount - 1) {
+        async nextPage() {
+            //if (this.pageNumber < this.pageCount - 1) {
                 this.pageNumber++
-            }
+                this.characters = await getCharacters(this.pageNumber)
+                console.log(this.characters) // Ajoutez cette ligne
+            //}
         },
         previousPage() {
             if (this.pageNumber > 0) {
@@ -59,7 +61,7 @@ export default {
     },
     async mounted() {
         try {
-            this.characters = await getCharacters()
+            this.characters = await getCharacters(1)
             console.log(this.characters) // Ajoutez cette ligne
         } catch (error) {
             this.error = error.message

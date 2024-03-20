@@ -3,8 +3,19 @@ import axios from 'axios'
 const API_URL = 'https://api.potterdb.com/v1'
 
 export async function getPotions() {
-    const response = await axios.get(`${API_URL}/potions`)
-    return response.data.data // Ajoutez .data ici
+    let potions = [];
+    let pageNumber = 1;
+    let response;
+
+    do {
+        response = await axios.get(`${API_URL}/potions?page[size]=100&page[number]=${pageNumber}`);
+        const data = response.data;
+
+        potions = potions.concat(data.data);
+        pageNumber++;
+    } while (response.data.links.next);
+
+    return potions;
 }
 
 export async function getPotion(id) {
@@ -13,9 +24,19 @@ export async function getPotion(id) {
 }
 
 export async function getSorts() {
-    // Remplacez cette URL par l'URL de votre API
-    const response = await axios.get(`${API_URL}/spells`)
-    return response.data.data 
+    let sorts = [];
+    let pageNumber = 1;
+    let response;
+
+    do {
+        response = await axios.get(`${API_URL}/spells?page[size]=100&page[number]=${pageNumber}`);
+        const data = response.data;
+
+        sorts = sorts.concat(data.data);
+        pageNumber++;
+    } while (response.data.links.next);
+
+    return sorts;
 }
 
 export async function getSort(id) {
@@ -24,25 +45,37 @@ export async function getSort(id) {
 }
 
 export async function getBooks() {
-    // Remplacez cette URL par l'URL de votre API
-    const response = await axios.get(`${API_URL}/books`)
-    return response.data.data 
+    let books = [];
+    let pageNumber = 1;
+    let response;
+
+    do {
+        response = await axios.get(`${API_URL}/books?page[size]=100&page[number]=${pageNumber}`);
+        const data = response.data;
+
+        books = books.concat(data.data);
+        pageNumber++;
+    } while (response.data.links.next);
+
+    return books;
 }
 
 export async function getBook(id) {
-    // Remplacez cette URL par l'URL de votre API
     const response = await axios.get(`${API_URL}/books/${id}`)
     return response.data
 }
 
-export async function getCharacters() {
-    // Remplacez cette URL par l'URL de votre API
-    const response = await axios.get(`${API_URL}/characters`)
-    return response.data.data 
+export async function getCharacters(pageNumber = 0) {
+    const response = await axios.get(`${API_URL}/characters?page[size]=12&page[number]=${pageNumber}`);
+    return response.data.data;
 }
 
 export async function getCharacter(id) {
-    // Remplacez cette URL par l'URL de votre API
     const response = await axios.get(`${API_URL}/characters/${id}`)
-    return response.data
+    return response.data.data;
+}
+
+export async function getChapters(id) {
+    const response = await axios.get(`${API_URL}/books/${id}/chapters`)
+    return response.data.data
 }
