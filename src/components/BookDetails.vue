@@ -78,6 +78,6 @@ export default {
 }
 
 h2 {
-    font-size: 1.2em; /* Adjust as needed */
+    font-size: 1.2em;
 }
 </style>
