@@ -3,7 +3,7 @@
         <h1>Potions</h1>
         <input type="text" v-model="search" placeholder="Rechercher une potion">
         <ul class="potion-list">
-            <li v-for="potion in paginatedData" :key="potion.id">
+            <li v-for="potion in potions" :key="potion.id">
                 <router-link :to="`/potions/${potion.id}`">
                     <div class="potion-item">
                         <img :src="potion.attributes ? potion.attributes.image : ''" alt="Potion image">
@@ -12,13 +12,14 @@
                 </router-link>
             </li>
         </ul>
-        <button @click="previousPage" :disabled="pageNumber <= 0">Précédent</button>
-        <button @click="nextPage" :disabled="pageNumber >= pageCount - 1">Suivant</button>
+        <button @click="previousPage" :disabled="pageNumber <= 1">Précédent</button>
+        <button @click="nextPage" :disabled="isLastPage">Suivant</button>
     </div>
 </template>
 
 <script>
-import { getPotions } from '../PotterDbAPI.js'
+import { getPotions, searchPotions } from '../PotterDbAPI.js'
+import _ from 'lodash'
 
 export default {
     data() {
@@ -26,41 +27,46 @@ export default {
             potions: [],
             search: '',
             error: null,
-            pageNumber: 0, // Ajoutez cette ligne
-            pageSize: 12 // Ajoutez cette ligne
+            pageNumber: 1,
+            pageSize: 12,
+            isLastPage: false
         }
     },
-    computed: {
-        filteredPotions() {
-            return this.potions.filter(potion => 
-                potion.attributes.name.toLowerCase().includes(this.search.toLowerCase())
-            );
-        },
-        pageCount() { // Ajoutez ce bloc
-            return Math.ceil(this.filteredPotions.length / this.pageSize)
-        },
-        paginatedData() { // Ajoutez ce bloc
-            const start = this.pageNumber * this.pageSize
-            const end = start + this.pageSize
-            return this.filteredPotions.slice(start, end)
+    watch: {
+        search: {
+            handler: _.debounce(async function (newSearch) {
+                if (newSearch) {
+                    this.potions = await searchPotions(newSearch)
+                } else {
+                    this.potions = await getPotions(this.pageNumber)
+                }
+            }, 300),
+            immediate: true
         }
     },
     methods: {
-        nextPage() {
-            if (this.pageNumber < this.pageCount - 1) {
-                this.pageNumber++
+        async nextPage() {
+            const nextPageNumber = this.pageNumber + 1
+            const nextPageData = await getPotions(nextPageNumber)
+            if (nextPageData.length > 0) {
+                this.pageNumber = nextPageNumber
+                this.potions = nextPageData
+                this.isLastPage = false
+            } else {
+                this.isLastPage = true
             }
         },
-        previousPage() {
-            if (this.pageNumber > 0) {
+        async previousPage() {
+            if (this.pageNumber > 1) {
                 this.pageNumber--
+                this.potions = await getPotions(this.pageNumber)
+                this.isLastPage = false
             }
         }
     },
     async mounted() {
         try {
-            this.potions = await getPotions()
-            console.log(this.potions) // Ajoutez cette ligne
+            this.potions = await getPotions(1)
         } catch (error) {
             this.error = error.message
             console.error(error)

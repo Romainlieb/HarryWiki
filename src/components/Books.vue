@@ -3,7 +3,7 @@
         <h1>Livres</h1>
         <input type="text" v-model="search" placeholder="Rechercher un livre">
         <ul class="book-list">
-            <li v-for="book in paginatedData" :key="book.id">
+            <li v-for="book in books" :key="book.id">
                 <router-link :to="`/livres/${book.id}`">
                     <div class="book-item">
                         <img :src="book.attributes ? book.attributes.cover : ''" alt="book image">
@@ -12,13 +12,14 @@
                 </router-link>
             </li>
         </ul>
-        <button @click="previousPage" :disabled="pageNumber <= 0">Précédent</button>
-        <button @click="nextPage" :disabled="pageNumber >= pageCount - 1">Suivant</button>
+        <button @click="previousPage" :disabled="pageNumber <= 1">Précédent</button>
+        <button @click="nextPage" :disabled="isLastPage">Suivant</button>
     </div>
 </template>
 
 <script>
-import { getBooks } from '../PotterDbAPI.js'
+import { getBooks, searchBooks } from '../PotterDbAPI.js'
+import _ from 'lodash'
 
 export default {
     data() {
@@ -26,42 +27,46 @@ export default {
             books: [],
             search: '',
             error: null,
-            pageNumber: 0,
-            pageSize: 12
+            pageNumber: 1,
+            pageSize: 12,
+            isLastPage: false
         }
     },
-    computed: {
-        filteredBooks() {
-            return this.books.filter(book => 
-                book.attributes.title.toLowerCase().includes(this.search.toLowerCase())
-            );
-        },
-        pageCount() {
-            return Math.ceil(this.filteredBooks.length / this.pageSize)
-        },
-        paginatedData() {
-            const start = this.pageNumber * this.pageSize
-            const end = start + this.pageSize
-            return this.filteredBooks.slice(start, end)
-            
+    watch: {
+        search: {
+            handler: _.debounce(async function (newSearch) {
+                if (newSearch) {
+                    this.books = await searchBooks(newSearch)
+                } else {
+                    this.books = await getBooks(this.pageNumber)
+                }
+            }, 300),
+            immediate: true
         }
     },
     methods: {
-        nextPage() {
-            if (this.pageNumber < this.pageCount - 1) {
-                this.pageNumber++
+        async nextPage() {
+            const nextPageNumber = this.pageNumber + 1
+            const nextPageData = await getBooks(nextPageNumber)
+            if (nextPageData.length > 0) {
+                this.pageNumber = nextPageNumber
+                this.books = nextPageData
+                this.isLastPage = false
+            } else {
+                this.isLastPage = true
             }
         },
-        previousPage() {
-            if (this.pageNumber > 0) {
+        async previousPage() {
+            if (this.pageNumber > 1) {
                 this.pageNumber--
+                this.books = await getBooks(this.pageNumber)
+                this.isLastPage = false
             }
         }
     },
     async mounted() {
         try {
-            this.books = await getBooks()
-            console.log(this.books)
+            this.books = await getBooks(1)
         } catch (error) {
             this.error = error.message
             console.error(error)

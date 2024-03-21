@@ -1,13 +1,13 @@
 <template>
     <div class="container">
         <div class="box">
-            <img class="character-image" v-if="character.data && character.data.attributes && character.data.attributes.image" :src="character.data.attributes.image" alt="Character image">
+            <img class="character-image" v-if="character.attributes && character.attributes.image" :src="character.attributes.image" alt="Character image">
             <div class="content">
-                <h1>{{ character.data && character.data.attributes ? character.data.attributes.name : '' }}</h1>
-                <p v-if="character.data && character.data.attributes && character.data.attributes.nationality">Nationalité: {{ character.data.attributes.nationality }}</p>
-                <p v-if="character.data && character.data.attributes && character.data.attributes.born">Date et lieu de naissance: {{ character.data.attributes.born }}</p>
-                <p v-if="character.data && character.data.attributes && character.data.attributes.house">Affiliation: {{ character.data.attributes.house }}</p>
-                <div v-if="character.data && character.data.attributes && character.data.attributes.wands" v-for="wand in character.data.attributes.wands">
+                <h1>{{ character.attributes ? character.attributes.name : '' }}</h1>
+                <p v-if="character.attributes && character.attributes.nationality">Nationalité: {{ character.attributes.nationality }}</p>
+                <p v-if="character.attributes && character.attributes.born">Date et lieu de naissance: {{ character.attributes.born }}</p>
+                <p v-if="character.attributes && character.attributes.house">Affiliation: {{ character.attributes.house }}</p>
+                <div v-if="character.attributes && character.attributes.wands" v-for="wand in character.attributes.wands">
                     <p >Baguette : {{ wand }}</p>
                 </div>
             </div>

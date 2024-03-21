@@ -12,13 +12,14 @@
                 </router-link>
             </li>
         </ul>
-        <button @click="previousPage" :disabled="pageNumber <= 0">Précédent</button>
-        <button @click="nextPage" >Suivant</button>
+        <button @click="previousPage" :disabled="pageNumber <= 1">Précédent</button>
+        <button @click="nextPage" :disabled="isLastPage">Suivant</button>
     </div>
 </template>
 
 <script>
-import { getCharacters } from '../PotterDbAPI.js'
+import { getCharacters, searchCharacters } from '../PotterDbAPI.js'
+import _ from 'lodash'
 
 export default {
     data() {
@@ -26,43 +27,46 @@ export default {
             characters: [],
             search: '',
             error: null,
-            pageNumber: 1, // Ajoutez cette ligne
-            pageSize: 12 // Ajoutez cette ligne
+            pageNumber: 1,
+            pageSize: 12,
+            isLastPage: false
         }
     },
-    computed: {
-        filteredCharacters() {
-            return this.characters.filter(character => 
-                character.attributes.name.toLowerCase().includes(this.search.toLowerCase())
-            );
-        },
-        pageCount() { // Ajoutez ce bloc
-            return Math.ceil(this.filteredCharacters.length / this.pageSize)
-        },
-        paginatedData() { // Ajoutez ce bloc
-            const start = this.pageNumber * this.pageSize
-            const end = start + this.pageSize
-            return this.filteredCharacters.slice(start, end)
+    watch: {
+        search: {
+            handler: _.debounce(async function (newSearch) {
+                if (newSearch) {
+                    this.characters = await searchCharacters(newSearch)
+                } else {
+                    this.characters = await getCharacters(this.pageNumber)
+                }
+            }, 300),
+            immediate: true
         }
     },
     methods: {
         async nextPage() {
-            //if (this.pageNumber < this.pageCount - 1) {
-                this.pageNumber++
-                this.characters = await getCharacters(this.pageNumber)
-                console.log(this.characters) // Ajoutez cette ligne
-            //}
+            const nextPageNumber = this.pageNumber + 1
+            const nextPageData = await getCharacters(nextPageNumber)
+            if (nextPageData.length > 0) {
+                this.pageNumber = nextPageNumber
+                this.characters = nextPageData
+                this.isLastPage = false
+            } else {
+                this.isLastPage = true
+            }
         },
-        previousPage() {
-            if (this.pageNumber > 0) {
+        async previousPage() {
+            if (this.pageNumber > 1) {
                 this.pageNumber--
+                this.characters = await getCharacters(this.pageNumber)
+                this.isLastPage = false
             }
         }
     },
     async mounted() {
         try {
             this.characters = await getCharacters(1)
-            console.log(this.characters) // Ajoutez cette ligne
         } catch (error) {
             this.error = error.message
             console.error(error)

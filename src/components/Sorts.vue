@@ -3,7 +3,7 @@
         <h1>Sorts</h1>
         <input type="text" v-model="search" placeholder="Rechercher un sort">
         <ul class="sort-list">
-            <li v-for="sort in paginatedData" :key="sort.id">
+            <li v-for="sort in sorts" :key="sort.id">
                 <router-link :to="`/sorts/${sort.id}`">
                     <div class="sort-item">
                         <img :src="sort.attributes ? sort.attributes.image : ''" alt="Sort image">
@@ -12,13 +12,14 @@
                 </router-link>
             </li>
         </ul>
-        <button @click="previousPage" :disabled="pageNumber <= 0">Précédent</button>
-        <button @click="nextPage" :disabled="pageNumber >= pageCount - 1">Suivant</button>
+        <button @click="previousPage" :disabled="pageNumber <= 1">Précédent</button>
+        <button @click="nextPage" :disabled="isLastPage">Suivant</button>
     </div>
 </template>
 
 <script>
-import { getSorts } from '../PotterDbAPI.js'
+import { getSorts, searchSorts } from '../PotterDbAPI.js'
+import _ from 'lodash'
 
 export default {
     data() {
@@ -26,41 +27,46 @@ export default {
             sorts: [],
             search: '',
             error: null,
-            pageNumber: 0,
-            pageSize: 12
+            pageNumber: 1,
+            pageSize: 12,
+            isLastPage: false
         }
     },
-    computed: {
-        filteredSorts() {
-            return this.sorts.filter(sort => 
-                sort.attributes.name.toLowerCase().includes(this.search.toLowerCase())
-            );
-        },
-        pageCount() {
-            return Math.ceil(this.filteredSorts.length / this.pageSize)
-        },
-        paginatedData() {
-            const start = this.pageNumber * this.pageSize
-            const end = start + this.pageSize
-            return this.filteredSorts.slice(start, end)
+    watch: {
+        search: {
+            handler: _.debounce(async function (newSearch) {
+                if (newSearch) {
+                    this.sorts = await searchSorts(newSearch)
+                } else {
+                    this.sorts = await getSorts(this.pageNumber)
+                }
+            }, 300),
+            immediate: true
         }
     },
     methods: {
-        nextPage() {
-            if (this.pageNumber < this.pageCount - 1) {
-                this.pageNumber++
+        async nextPage() {
+            const nextPageNumber = this.pageNumber + 1
+            const nextPageData = await getSorts(nextPageNumber)
+            if (nextPageData.length > 0) {
+                this.pageNumber = nextPageNumber
+                this.sorts = nextPageData
+                this.isLastPage = false
+            } else {
+                this.isLastPage = true
             }
         },
-        previousPage() {
-            if (this.pageNumber > 0) {
+        async previousPage() {
+            if (this.pageNumber > 1) {
                 this.pageNumber--
+                this.sorts = await getSorts(this.pageNumber)
+                this.isLastPage = false
             }
         }
     },
     async mounted() {
         try {
-            this.sorts = await getSorts()
-            console.log(this.sorts)
+            this.sorts = await getSorts(1)
         } catch (error) {
             this.error = error.message
             console.error(error)
